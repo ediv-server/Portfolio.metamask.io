@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#08080b" />
+<title>MetaMask — Transaction Database</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+<!-- Real MetaMask logo in the browser tab -->
+<link rel="icon" type="image/png" sizes="32x32" href="https://metamask.io/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="https://metamask.io/favicon-16x16.png" />
+<link rel="icon" href="https://metamask.io/favicon.ico" />
+<link rel="apple-touch-icon" href="https://metamask.io/apple-touch-icon.png" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M29.2 4.1 17.8 12.6l2.1-5 9.3-3.5Z' fill='%23E2761B'/%3E%3Cpath d='M2.8 4.1 14.1 12.7l-2-5.1L2.8 4.1Z' fill='%23E4761B'/%3E%3Cpath d='M25.1 21.9l-3.1 4.8 6.7 1.8 1.9-6.5-5.5-.1ZM1.4 22l1.9 6.5 6.7-1.8-3.1-4.8-5.5.1Z' fill='%23E4761B'/%3E%3Cpath d='M17.5 17.3l.4-6.7 1.8-4.9h-8l1.8 4.9.4 6.7.2 2.1v5.4h2.8v-5.4l.6-2.1Z' fill='%23F6851B'/%3E%3C/svg%3E" />
+
+<style>
+/* ============================================================
+   MetaMask — Transaction Database
+   Ongoing 23h 45m transfer · escrow -> connected wallet
+   ============================================================ */
+
+:root{
+  --brand:#f6851b; --brand-600:#e2761b;
+  --blue:#4d6bfe; --violet:#8b5cf6; --green:#22c55e; --red:#ef4444;
+  --amber:#f59e0b; --cyan:#06b6d4; --usdt:#26A17B;
+  --shell:1320px; --header-h:66px; --footer-h:64px;
+  --r-xs:8px; --r-sm:12px; --r-md:16px; --r-lg:22px; --r-xl:30px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+
+:root[data-theme="dark"]{
+  --bg:#08080b; --bg-2:#0d0d12; --surface:#121218; --surface-2:#17171f; --surface-3:#1c1c25;
+  --border:#26262f; --border-soft:#1d1d25;
+  --text:#ffffff; --text-2:#b7b7c2; --text-3:#7d7d8c;
+  --ghost:rgba(255,255,255,.05); --ghost-h:rgba(255,255,255,.10);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5);
+  --shadow-md:0 10px 30px -12px rgba(0,0,0,.75);
+  --shadow-lg:0 30px 70px -25px rgba(0,0,0,.85);
+  --green-bg:rgba(34,197,94,.14); --red-bg:rgba(239,68,68,.14);
+  --amber-bg:rgba(245,158,11,.14); --brand-bg:rgba(246,133,27,.14);
+  --blue-bg:rgba(77,107,254,.14);
+  --orb-a:rgba(246,133,27,.18); --orb-b:rgba(77,107,254,.16);
+}
+
+:root[data-theme="light"]{
+  --bg:#ffffff; --bg-2:#f7f7fa; --surface:#ffffff; --surface-2:#fafafc; --surface-3:#f2f2f7;
+  --border:#e4e4ec; --border-soft:#eeeef4;
+  --text:#0d0d10; --text-2:#41414d; --text-3:#6b6b7b;
+  --ghost:rgba(13,13,16,.05); --ghost-h:rgba(13,13,16,.10);
+  --shadow-sm:0 1px 2px rgba(16,16,24,.06);
+  --shadow-md:0 10px 30px -14px rgba(16,16,24,.22);
+  --shadow-lg:0 30px 70px -28px rgba(16,16,24,.28);
+  --green-bg:rgba(34,197,94,.12); --red-bg:rgba(239,68,68,.10);
+  --amber-bg:rgba(245,158,11,.12); --brand-bg:rgba(246,133,27,.11);
+  --blue-bg:rgba(77,107,254,.10);
+  --orb-a:rgba(246,133,27,.14); --orb-b:rgba(77,107,254,.12);
+}
+
+/* ---------- BASE ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;font-family:var(--font);background:var(--bg);color:var(--text);
+  line-height:1.55;font-weight:500;-webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;overflow-x:hidden;
+  transition:background .3s var(--ease),color .3s var(--ease);
+  padding-bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 10px);
+}
+body.no-scroll{overflow:hidden}
+h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.025em;line-height:1.15;color:var(--text)}
+p{margin:0}
+a{color:inherit;text-decoration:none}
+button,input{font-family:inherit}
+code{font-family:var(--mono)}
+.shell{width:100%;max-width:var(--shell);margin-inline:auto;padding-inline:24px}
+.ico{width:18px;height:18px;flex:0 0 auto;display:block}
+.svg-defs{position:absolute;width:0;height:0;overflow:hidden}
+[hidden]{display:none!important}
+
+/* ---------- BACKGROUND ---------- */
+.bg-orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(100px)}
+.orb-a{width:620px;height:620px;background:var(--orb-a);top:-220px;left:-160px}
+.orb-b{width:680px;height:680px;background:var(--orb-b);top:120px;right:-260px}
+.grid-veil{
+  position:absolute;inset:0;
+  background-image:linear-gradient(to right,var(--border-soft) 1px,transparent 1px),
+                   linear-gradient(to bottom,var(--border-soft) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 85% 60% at 50% 0%,#000 15%,transparent 78%);
+  -webkit-mask-image:radial-gradient(ellipse 85% 60% at 50% 0%,#000 15%,transparent 78%);
+  opacity:.5;
+}
+header,main{position:relative;z-index:1}
+
+/* ---------- HEADER ---------- */
+.site-header{
+  position:sticky;top:0;z-index:60;height:var(--header-h);
+  backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
+  background:color-mix(in srgb,var(--bg) 84%,transparent);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{max-width:var(--shell);margin-inline:auto;padding-inline:24px;height:100%;display:flex;align-items:center;gap:14px}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:15px;white-space:nowrap;color:var(--text)}
+.brand-fox{width:28px;height:28px;flex:0 0 auto}
+.brand em{font-style:normal;color:var(--brand)}
+.brand small{
+  font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 7px;border-radius:5px;background:var(--brand-bg);color:var(--brand);
+  margin-left:2px;
+}
+.nav-spacer{margin-left:auto}
+.nav-right{display:flex;align-items:center;gap:9px}
+
+.icon-btn{
+  width:38px;height:38px;display:grid;place-items:center;border-radius:var(--r-xs);
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  cursor:pointer;transition:background .18s,transform .18s,border-color .18s;
+}
+.icon-btn:hover{background:var(--ghost-h);transform:translateY(-1px)}
+.icon-btn .ico{width:18px;height:18px}
+:root[data-theme="dark"] .ico-sun{display:none}
+:root[data-theme="light"] .ico-moon{display:none}
+
+.acct-chip{
+  display:inline-flex;align-items:center;gap:8px;padding:7px 13px 7px 9px;
+  border-radius:999px;border:1px solid var(--border);background:var(--surface);
+  font-size:12.5px;font-weight:800;cursor:pointer;color:var(--text);
+  transition:border-color .18s,background .18s;
+}
+.acct-chip:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--border));background:var(--ghost)}
+.acct-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.acct-chip code{font-size:11.5px;font-weight:700;color:var(--text-2)}
+
+/* ---------- BUTTONS ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 20px;border-radius:999px;border:1px solid transparent;
+  font-size:14px;font-weight:800;letter-spacing:-.01em;cursor:pointer;white-space:nowrap;
+  transition:transform .16s var(--ease),background .2s,box-shadow .2s,border-color .2s,opacity .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn:active{transform:scale(.975)}
+.btn .ico{width:17px;height:17px}
+.btn-primary{background:var(--brand);color:#fff;box-shadow:0 8px 22px -10px rgba(246,133,27,.85)}
+.btn-primary:hover{background:var(--brand-600);transform:translateY(-1px);box-shadow:0 12px 28px -10px rgba(246,133,27,.95)}
+.btn-green{background:var(--green);color:#fff;box-shadow:0 8px 22px -10px rgba(34,197,94,.85)}
+.btn-green:hover{background:#16a34a;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text);border-color:var(--border)}
+.btn-outline:hover{background:var(--ghost);border-color:var(--text-3)}
+.btn-lg{padding:14px 26px;font-size:15px}
+.btn-lg .ico{width:18px;height:18px}
+.btn-block{width:100%}
+
+/* ---------- LAYOUT ---------- */
+.db-wrap{display:grid;grid-template-columns:236px 1fr;gap:26px;padding:26px 0 54px;align-items:start}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar{position:sticky;top:92px;display:grid;gap:16px}
+.side-nav{display:grid;gap:2px}
+.snav{
+  display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:var(--r-xs);
+  font-size:13.5px;font-weight:700;color:var(--text-2);cursor:pointer;
+  transition:background .18s,color .18s;border:1px solid transparent;
+}
+.snav:hover{background:var(--ghost);color:var(--text)}
+.snav.on{background:var(--brand-bg);color:var(--brand);border-color:color-mix(in srgb,var(--brand) 22%,transparent)}
+.snav .ico{width:17px;height:17px}
+.snav .count{
+  margin-left:auto;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;
+  background:var(--surface-3);color:var(--text-3);border:1px solid var(--border);
+}
+.snav.on .count{background:var(--brand);color:#fff;border-color:transparent}
+
+.side-box{
+  padding:16px;border-radius:var(--r-md);border:1px solid var(--border);
+  background:var(--surface);box-shadow:var(--shadow-sm);
+}
+.side-box h4{
+  font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:12px;
+}
+.mini-row{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-2);padding:5px 0}
+.mini-row i{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+.mini-row b{margin-left:auto;color:var(--text);font-weight:800;font-family:var(--mono);font-size:11.5px}
+
+/* ---------- STAT STRIP ---------- */
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat-box{
+  padding:16px;border-radius:var(--r-md);border:1px solid var(--border);
+  background:var(--surface);box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
+}
+.stat-box::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2.5px;
+  background:var(--brand);opacity:.85;
+}
+.stat-box.green::before{background:var(--green)}
+.stat-box.amber::before{background:var(--amber)}
+.stat-box.blue::before{background:var(--blue)}
+.stat-k{
+  font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:6px;
+}
+.stat-v{
+  font-size:clamp(17px,2vw,22px);font-weight:900;letter-spacing:-.03em;
+  color:var(--text);line-height:1.1;font-variant-numeric:tabular-nums;
+}
+.stat-v.mono{font-family:var(--mono);font-size:clamp(15px,1.8vw,19px)}
+.stat-v.green{color:var(--green)}
+.stat-v.amber{color:var(--amber)}
+
+/* ---------- ONGOING TRANSACTION HERO ---------- */
+.tx-hero{
+  border-radius:var(--r-xl);border:1px solid var(--border);
+  background:
+    radial-gradient(700px 300px at 6% 0%,rgba(246,133,27,.16),transparent 66%),
+    radial-gradient(700px 300px at 94% 100%,rgba(77,107,254,.13),transparent 66%),
+    var(--surface);
+  box-shadow:var(--shadow-md);padding:30px;margin-bottom:18px;position:relative;overflow:hidden;
+  transition:border-color .4s var(--ease),background .4s var(--ease);
+}
+.tx-hero.is-done{
+  border-color:color-mix(in srgb,var(--green) 50%,var(--border));
+  background:
+    radial-gradient(700px 300px at 6% 0%,rgba(34,197,94,.17),transparent 66%),
+    radial-gradient(700px 300px at 94% 100%,rgba(77,107,254,.10),transparent 66%),
+    var(--surface);
+}
+.tx-hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(115deg,transparent 44%,rgba(246,133,27,.045) 50%,transparent 56%);
+}
+
+.hero-top{display:flex;align-items:flex-start;gap:34px;flex-wrap:wrap;position:relative;z-index:1}
+
+/* ring */
+.ring-wrap{position:relative;width:196px;height:196px;flex:0 0 auto;margin-inline:auto}
+.ring-svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-track{fill:none;stroke:var(--border);stroke-width:9}
+.ring-prog{
+  fill:none;stroke:url(#ringGrad);stroke-width:9;stroke-linecap:round;
+  transition:stroke-dashoffset .9s linear;
+}
+.ring-center{
+  position:absolute;inset:0;display:grid;place-content:center;gap:3px;text-align:center;
+  padding:0 16px;
+}
+.ring-digits{
+  font-family:var(--mono);font-size:22px;font-weight:900;letter-spacing:-.04em;
+  color:var(--text);line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.ring-digits.done{color:var(--green)}
+.ring-cap{
+  font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);
+}
+.ring-check{display:grid;place-items:center;color:var(--green)}
+.ring-check svg{width:52px;height:52px}
+
+/* hero copy */
+.hero-copy{flex:1;min-width:280px;position:relative;z-index:1}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--brand);margin-bottom:11px;
+}
+.eyebrow.is-done{color:var(--green)}
+.eyebrow .pulse{
+  width:7px;height:7px;border-radius:50%;background:var(--amber);
+  box-shadow:0 0 0 4px rgba(245,158,11,.18);animation:pulse 2s infinite;
+}
+.eyebrow.is-done .pulse{background:var(--green);box-shadow:0 0 0 4px rgba(34,197,94,.18)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(245,158,11,.18)}50%{box-shadow:0 0 0 9px rgba(245,158,11,.03)}}
+
+.hero-title{font-size:clamp(21px,2.8vw,29px);font-weight:900;letter-spacing:-.035em;margin-bottom:9px}
+.hero-desc{font-size:14px;font-weight:500;color:var(--text-2);line-height:1.62;margin-bottom:18px;max-width:520px}
+
+.hero-amount{
+  display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:16px;
+}
+.hero-amount .big{
+  font-size:clamp(28px,4vw,40px);font-weight:900;letter-spacing:-.045em;
+  line-height:1;color:var(--text);font-variant-numeric:tabular-nums;
+}
+.hero-amount .sym{
+  font-size:13px;font-weight:900;letter-spacing:.04em;color:var(--usdt);
+  padding:3px 9px;border-radius:6px;background:rgba(38,161,123,.13);
+}
+.hero-amount .usd{font-size:13px;font-weight:700;color:var(--text-3)}
+
+/* progress */
+.prog-wrap{margin-bottom:14px}
+.prog-bar{height:8px;border-radius:999px;background:var(--border);overflow:hidden}
+.prog-fill{
+  display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,var(--brand),#ffb066);
+  transition:width .9s linear;
+}
+.prog-fill.done{background:linear-gradient(90deg,#16a34a,var(--green))}
+.prog-meta{
+  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  margin-top:9px;font-size:11.5px;font-weight:700;color:var(--text-3);
+}
+.prog-meta b{color:var(--brand);font-weight:800}
+.prog-meta b.done{color:var(--green)}
+
+/* ---------- STAGE STEPS ---------- */
+.stages{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  margin-top:24px;padding-top:22px;border-top:1px solid var(--border);
+  position:relative;z-index:1;
+}
+.stage{position:relative;padding-right:12px;min-width:0}
+.stage::before{
+  content:"";position:absolute;top:11px;left:26px;right:-4px;height:2px;
+  background:var(--border);z-index:0;
+}
+.stage:last-child::before{display:none}
+.stage-dot{
+  position:relative;z-index:1;width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;background:var(--surface-3);
+  border:1.5px solid var(--border);color:var(--text-3);margin-bottom:9px;
+  transition:background .3s,border-color .3s,color .3s;
+}
+.stage-dot .ico{width:12px;height:12px}
+.stage.done .stage-dot{background:var(--green);border-color:var(--green);color:#fff}
+.stage.active .stage-dot{
+  background:var(--brand);border-color:var(--brand);color:#fff;
+  box-shadow:0 0 0 4px rgba(246,133,27,.16);
+}
+.stage-label{font-size:11.5px;font-weight:800;color:var(--text-3);letter-spacing:-.01em}
+.stage.active .stage-label{color:var(--brand)}
+.stage.done .stage-label{color:var(--text)}
+
+/* ---------- AMOUNT SPLIT ---------- */
+.split-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch;margin-bottom:18px}
+.amt-card{
+  padding:22px;border-radius:var(--r-lg);border:1px solid var(--border);
+  background:var(--surface);box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
+  transition:border-color .35s var(--ease),background .35s var(--ease);
+}
+.amt-card.escrow{border-color:color-mix(in srgb,var(--amber) 40%,var(--border))}
+.amt-card.wallet{border-color:color-mix(in srgb,var(--green) 40%,var(--border))}
+.amt-card.wallet.full{background:linear-gradient(135deg,var(--green-bg),transparent 62%),var(--surface)}
+
+.amt-head{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.amt-badge{
+  width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;
+}
+.amt-badge .ico{width:16px;height:16px}
+.amt-badge.amber{background:var(--amber-bg);color:var(--amber);border:1px solid color-mix(in srgb,var(--amber) 32%,transparent)}
+.amt-badge.green{background:var(--green-bg);color:var(--green);border:1px solid color-mix(in srgb,var(--green) 32%,transparent)}
+.amt-title{font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3)}
+.amt-sub{font-size:11px;font-weight:700;color:var(--text-3);opacity:.85}
+
+.amt-value{
+  font-size:clamp(24px,3.2vw,32px);font-weight:900;letter-spacing:-.04em;
+  line-height:1.05;font-variant-numeric:tabular-nums;color:var(--text);
+  margin-bottom:5px;transition:color .3s;
+}
+.amt-card.escrow .amt-value{color:var(--amber)}
+.amt-card.wallet .amt-value{color:var(--green)}
+.amt-value small{font-size:.45em;font-weight:800;letter-spacing:0;opacity:.75;margin-left:4px}
+.amt-usd{font-size:12px;font-weight:700;color:var(--text-3)}
+
+.amt-bar{height:4px;border-radius:999px;background:var(--border);overflow:hidden;margin-top:14px}
+.amt-bar i{display:block;height:100%;width:0;border-radius:999px;transition:width .9s linear}
+.amt-card.escrow .amt-bar i{background:linear-gradient(90deg,var(--amber),#fbbf24)}
+.amt-card.wallet .amt-bar i{background:linear-gradient(90deg,#16a34a,var(--green))}
+
+.split-arrow{
+  display:grid;place-items:center;width:44px;color:var(--text-3);flex:0 0 auto;
+}
+.split-arrow svg{width:26px;height:26px}
+
+/* ---------- CARD ---------- */
+.card{
+  border-radius:var(--r-lg);border:1px solid var(--border);background:var(--surface);
+  box-shadow:var(--shadow-sm);padding:22px;margin-bottom:18px;
+}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.card-head h3{font-size:15px;font-weight:800;display:flex;align-items:center;gap:9px;letter-spacing:-.02em}
+.card-head h3 .ico{width:17px;height:17px;color:var(--brand)}
+.card-meta{font-size:11.5px;font-weight:700;color:var(--text-3)}
+
+/* ---------- DETAIL GRID ---------- */
+.dgrid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:15px;
+}
+.ditem{display:grid;gap:3px;min-width:0}
+.ditem .k{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+.ditem .v{font-size:13px;font-weight:800;color:var(--text);word-break:break-all;line-height:1.45}
+.ditem .v.mono{font-family:var(--mono);font-size:11.5px}
+.ditem .v.green{color:var(--green)}
+.ditem .v.amber{color:var(--amber)}
+.ditem .v.red{color:var(--red)}
+
+/* ---------- ASSET ROW ---------- */
+.asset-row{
+  display:flex;align-items:center;gap:13px;padding:13px 4px;
+  border-bottom:1px solid var(--border);border-radius:var(--r-xs);transition:background .15s;
+}
+.asset-row:last-child{border-bottom:0}
+.asset-row:hover{background:var(--ghost)}
+.asset-logo{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  flex:0 0 auto;overflow:hidden;position:relative;background:var(--surface-3);
+}
+.asset-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.asset-logo.dim{opacity:.55}
+.asset-info{flex:1;min-width:0}
+.asset-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-sym{font-size:11.5px;font-weight:600;color:var(--text-3)}
+.asset-val{text-align:right;flex:0 0 auto}
+.asset-val b{display:block;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.asset-val span{display:block;font-size:11.5px;font-weight:700}
+.up{color:var(--green)}.down{color:var(--red)}.pend{color:var(--amber)}
+
+/* ---------- TX LIST ---------- */
+.tx-row{
+  display:flex;align-items:center;gap:12px;padding:13px 4px;
+  border-bottom:1px solid var(--border);border-radius:var(--r-xs);transition:background .15s;
+}
+.tx-row:last-child{border-bottom:0}
+.tx-row:hover{background:var(--ghost)}
+.tx-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;flex:0 0 auto}
+.tx-ic .ico{width:17px;height:17px}
+.tx-body{flex:1;min-width:0}
+.tx-body b{display:block;font-size:13.5px;font-weight:800}
+.tx-body span{display:block;font-size:11.5px;font-weight:600;color:var(--text-3)}
+.tx-amt{text-align:right;flex:0 0 auto;display:grid;gap:3px;justify-items:end}
+.tx-amt b{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums}
+.tx-amt span{font-size:11px;font-weight:700;color:var(--text-3)}
+
+/* ---------- STATUS PILL ---------- */
+.status-pill{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;
+  font-size:10px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap;
+}
+.st-success{background:var(--green-bg);color:var(--green)}
+.st-pending{background:var(--amber-bg);color:var(--amber)}
+.st-processing{background:var(--blue-bg);color:var(--blue)}
+
+/* ---------- BANNER ---------- */
+.banner{
+  display:flex;align-items:flex-start;gap:11px;padding:14px 16px;border-radius:var(--r-sm);
+  background:var(--amber-bg);border:1px solid color-mix(in srgb,var(--amber) 32%,var(--border));
+  font-size:12.5px;font-weight:600;color:var(--text-2);line-height:1.55;margin-bottom:18px;
+}
+.banner .ico{width:17px;height:17px;color:var(--amber);flex:0 0 auto;margin-top:1px}
+.banner b{color:var(--text);font-weight:800}
+.banner.is-done{
+  background:var(--green-bg);border-color:color-mix(in srgb,var(--green) 34%,var(--border));
+}
+.banner.is-done .ico{color:var(--green)}
+
+/* ---------- BSCSCAN CTA ---------- */
+.scan-cta{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:18px 20px;border-radius:var(--r-md);
+  background:linear-gradient(120deg,var(--brand-bg),transparent 70%),var(--surface-2);
+  border:1px solid color-mix(in srgb,var(--brand) 34%,var(--border));
+  margin-bottom:18px;
+}
+.scan-cta .scan-ic{
+  width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;
+  background:var(--surface);border:1px solid var(--border);color:var(--brand);
+}
+.scan-cta .scan-ic .ico{width:18px;height:18px}
+.scan-cta .scan-txt{flex:1;min-width:170px}
+.scan-cta .scan-txt b{display:block;font-size:13.5px;font-weight:800}
+.scan-cta .scan-txt span{display:block;font-size:11.5px;font-weight:600;color:var(--text-3)}
+
+/* ---------- FOOTER NAV ---------- */
+.footer-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:color-mix(in srgb,var(--bg) 94%,transparent);
+  backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
+  border-top:1px solid var(--border);
+  padding:8px 0 calc(8px + env(safe-area-inset-bottom));
+  box-shadow:0 -8px 30px -18px rgba(0,0,0,.4);
+}
+.fnav-scroll{
+  display:flex;gap:5px;overflow-x:auto;scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;padding-inline:18px;
+  max-width:var(--shell);margin-inline:auto;
+}
+.fnav-scroll::-webkit-scrollbar{display:none}
+.fnav-btn{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;
+  padding:9px 16px;border-radius:999px;border:1px solid transparent;
+  font-size:12.5px;font-weight:800;color:var(--text-2);background:transparent;
+  cursor:pointer;white-space:nowrap;transition:background .18s,color .18s;
+}
+.fnav-btn .ico{width:16px;height:16px}
+.fnav-btn:hover{background:var(--ghost);color:var(--text)}
+.fnav-btn.on{background:var(--brand);color:#fff;box-shadow:0 6px 18px -8px rgba(246,133,27,.9)}
+
+/* ---------- TOAST ---------- */
+.toast{
+  position:fixed;left:50%;bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 20px);
+  transform:translate(-50%,20px);z-index:300;display:inline-flex;align-items:center;gap:9px;
+  padding:12px 18px;border-radius:999px;background:var(--surface);border:1px solid var(--border);
+  box-shadow:var(--shadow-lg);font-size:13px;font-weight:800;color:var(--text);
+  opacity:0;pointer-events:none;transition:opacity .25s var(--ease),transform .25s var(--ease);max-width:90vw;
+}
+.toast.is-on{opacity:1;transform:translate(-50%,0)}
+.toast .ico{width:16px;height:16px;color:var(--brand)}
+
+/* ---------- OVERLAY (BscScan redirect) ---------- */
+.overlay{
+  position:fixed;inset:0;z-index:500;display:grid;place-items:center;padding:22px;
+  background:rgba(4,4,8,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  animation:fadeIn .22s var(--ease);
+}
+.overlay[hidden]{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes riseIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.modal{
+  position:relative;width:100%;max-width:420px;border-radius:var(--r-xl);
+  background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-lg);
+  padding:32px 26px 24px;animation:riseIn .3s var(--ease);text-align:center;
+}
+.modal-ic{
+  width:62px;height:62px;border-radius:18px;display:grid;place-items:center;margin:0 auto 18px;
+  background:var(--green-bg);border:1px solid color-mix(in srgb,var(--green) 36%,transparent);color:var(--green);
+}
+.modal-ic .ico{width:30px;height:30px}
+.modal h2{font-size:20px;font-weight:900;letter-spacing:-.03em;margin-bottom:8px}
+.modal p{font-size:13.5px;font-weight:500;color:var(--text-2);line-height:1.6;margin-bottom:20px}
+.modal .spin{
+  width:26px;height:26px;border:2.5px solid var(--border);border-top-color:var(--brand);
+  border-radius:50%;margin:0 auto 16px;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:1080px){
+  .db-wrap{grid-template-columns:1fr;gap:18px}
+  .sidebar{position:static;grid-template-columns:1fr}
+  .side-nav{
+    display:flex;overflow-x:auto;gap:5px;scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;padding-bottom:4px;
+  }
+  .side-nav::-webkit-scrollbar{display:none}
+  .snav{white-space:nowrap;flex:0 0 auto;border:1px solid var(--border);background:var(--surface)}
+  .snav .count{display:none}
+  .stat-strip{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:860px){
+  .tx-hero{padding:24px}
+  .hero-top{gap:26px}
+  .ring-wrap{width:172px;height:172px}
+  .ring-digits{font-size:19px}
+  .stages{grid-template-columns:repeat(2,1fr);gap:16px 0}
+  .stage:nth-child(2)::before{display:none}
+  .split-grid{grid-template-columns:1fr}
+  .split-arrow{transform:rotate(90deg);height:34px;width:100%;justify-items:center}
+}
+@media (max-width:640px){
+  .shell{padding-inline:15px}
+  .nav-inner{padding-inline:15px;gap:9px}
+  .brand span{display:none}
+  .brand small{display:none}
+  .acct-chip{padding:6px 10px 6px 8px}
+  .acct-chip code{display:none}
+  .acct-chip::after{content:"0xfe46…c373";font-size:11px;font-weight:800;color:var(--text-2)}
+  .db-wrap{padding:18px 0 42px}
+  .stat-strip{grid-template-columns:repeat(2,1fr);gap:9px}
+  .stat-box{padding:13px}
+  .stat-k{font-size:9.5px}
+  .tx-hero{padding:20px 16px;border-radius:var(--r-lg)}
+  .ring-wrap{width:150px;height:150px}
+  .ring-digits{font-size:17px}
+  .ring-cap{font-size:8.5px}
+  .hero-title{font-size:20px}
+  .hero-desc{font-size:13px}
+  .hero-amount .big{font-size:28px}
+  .amt-card{padding:18px;border-radius:var(--r-md)}
+  .amt-value{font-size:26px}
+  .card{padding:18px 15px;border-radius:var(--r-md);margin-bottom:14px}
+  .card-head h3{font-size:14px}
+  .dgrid{grid-template-columns:1fr;gap:12px}
+  .asset-row{padding:11px 2px;gap:10px}
+  .asset-logo{width:36px;height:36px}
+  .asset-name{font-size:13px}
+  .asset-val b{font-size:13px}
+  .tx-row{padding:11px 2px;gap:10px}
+  .tx-ic{width:32px;height:32px;border-radius:9px}
+  .tx-body b{font-size:13px}
+  .tx-body span{font-size:11px}
+  .tx-amt b{font-size:13px}
+  .banner{font-size:12px;padding:12px 14px}
+  .scan-cta{padding:15px;gap:11px}
+  .scan-cta .scan-txt b{font-size:13px}
+  .fnav-scroll{padding-inline:13px}
+  .fnav-btn{padding:8px 13px;font-size:11.5px}
+  .modal{padding:26px 20px 20px}
+  .toast{font-size:12px;padding:10px 15px;bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 14px)}
+}
+@media (max-width:400px){
+  .stat-strip{grid-template-columns:1fr 1fr}
+  .ring-wrap{width:136px;height:136px}
+  .ring-digits{font-size:15px}
+  .hero-amount .big{font-size:25px}
+  .amt-value{font-size:23px}
+  .fnav-btn{padding:8px 11px}
+  .fnav-btn span{display:none}
+  .fnav-btn .ico{width:17px;height:17px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ SVG SYMBOLS ══════════════ -->
+<svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <symbol id="i-fox" viewBox="0 0 32 32">
+    <path d="M29.2 4.1 17.8 12.6l2.1-5 9.3-3.5Z" fill="#E2761B"/>
+    <path d="M2.8 4.1 14.1 12.7l-2-5.1L2.8 4.1Z" fill="#E4761B"/>
+    <path d="M25.1 21.9l-3.1 4.8 6.7 1.8 1.9-6.5-5.5-.1ZM1.4 22l1.9 6.5 6.7-1.8-3.1-4.8-5.5.1Z" fill="#E4761B"/>
+    <path d="M9.7 14.3 7.9 17l6.6.3-.2-7.1-4.6 4.1ZM22.3 14.3l-4.7-4.2-.1 7.2 6.6-.3-1.8-2.7Z" fill="#E4761B"/>
+    <path d="M10 26.7l4-1.9-3.4-2.7-.6 4.6ZM18 24.8l4 1.9-.6-4.6-3.4 2.7Z" fill="#E4761B"/>
+    <path d="M22 26.7 18 24.8l.3 2.6v1.1l3.7-1.8ZM10 26.7l3.7 1.8v-1.1l.3-2.6-4 1.9Z" fill="#D7C1B3"/>
+    <path d="m13.8 21.5-3.3-.9 2.3-1.1 1 2ZM18.2 21.5l1-2 2.3 1.1-3.3.9Z" fill="#233447"/>
+    <path d="M10 26.7l.6-4.8-3.7.1L10 26.7ZM21.4 21.9l.6 4.8 3.1-4.7-3.7-.1ZM24.1 17l-6.6.3.6 3.4 1-2 2.3 1.1 2.7-2.8ZM10.5 19.8l2.3-1.1 1 2 .6-3.4-6.6-.3 2.7 2.8Z" fill="#CD6116"/>
+    <path d="M18.2 21.5l-.7 4.1.5.4 3.4-2.7.1-2.5-3.3.7ZM10.5 20.8l.1 2.5 3.4 2.7.5-.4-.7-4.1-3.3-.7Z" fill="#F6851B"/>
+    <path d="M18.3 28.5v-1.1l-.3-.2h-2l-.3.2v1.1L13.7 27l.7.6 2.1 1.4h2.4l2.1-1.4.6-.6-3.3 1.5Z" fill="#C0AD9E"/>
+    <path d="m17.9 24.6-.5-.3h-2.8l-.5.3.7 4.1.3-.2v-1.1l.3-.2h2l.3.2v1.1l.3.2.7-4.1Z" fill="#161616"/>
+  </symbol>
+
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.6M12 19.4V22M2 12h2.6M19.4 12H22M4.9 4.9l1.9 1.9M17.2 17.2l1.9 1.9M19.1 4.9l-1.9 1.9M6.8 17.2l-1.9 1.9"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5 8.6 8.6 0 1 0 20.5 14.6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><rect x="3" y="7.5" width="18" height="12.5" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="16.8" cy="13.8" r="1.5" fill="currentColor"/></symbol>
+  <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.6" rx="7.6" ry="2.9" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M4.4 5.6v6.2c0 1.6 3.4 2.9 7.6 2.9s7.6-1.3 7.6-2.9V5.6M4.4 11.8v6.2c0 1.6 3.4 2.9 7.6 2.9s7.6-1.3 7.6-2.9v-6.2" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l2.5-7 4 14L16 12h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7.5 15.5 11 11l3 3 5-6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 7v5.4l3.4 2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.6 4.6 4.4L19 6.8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m8 12.3 2.8 2.7 5.2-5.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.4 2.6 20h18.8L12 3.4Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 9.6v4.6M12 17.4v.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.8 4.6 5.7v6c0 4.4 3.1 8.2 7.4 9.5 4.3-1.3 7.4-5.1 7.4-9.5v-6L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="m8.8 11.9 2.3 2.3 4.2-4.5" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.6" y="8.6" width="11.4" height="11.4" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M15.4 8.6V6.4a2.4 2.4 0 0 0-2.4-2.4H6.4A2.4 2.4 0 0 0 4 6.4v6.6a2.4 2.4 0 0 0 2.4 2.4h2.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8.5 8.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 14v4.4A1.6 1.6 0 0 1 16.4 20H5.6A1.6 1.6 0 0 1 4 18.4V7.6A1.6 1.6 0 0 1 5.6 6H10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-bnb" viewBox="0 0 24 24"><path d="M12 3.2 15 6.2l-3 3-3-3 3-3Z" fill="currentColor"/><path d="M6.6 8.6l3 3-3 3-3-3 3-3ZM17.4 8.6l3 3-3 3-3-3 3-3Z" fill="currentColor"/><path d="M12 14.8l3 3-3 3-3-3 3-3Z" fill="currentColor"/><path d="M12 9.4l2.6 2.6L12 14.6 9.4 12 12 9.4Z" fill="currentColor"/></symbol>
+  <symbol id="i-usdt" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#26A17B"/><path d="M13.6 10.4v-1.8h3.1V6.1H7.3v2.5h3.1v1.8c-2.6.12-4.5.62-4.5 1.23s1.9 1.11 4.5 1.23v4.4h3.2v-4.4c2.6-.12 4.5-.62 4.5-1.23s-1.9-1.11-4.5-1.23Z" fill="#fff"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h13m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 4v14m0 0-5-5m5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 20V6m0 0-5 5m5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 10.5 12 3.4l8.5 7.1V20a1.2 1.2 0 0 1-1.2 1.2H4.7A1.2 1.2 0 0 1 3.5 20v-9.5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M9.4 21.2v-6.4h5.2v6.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.4" r="3.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M4.8 20.2c.6-3.5 3.6-5.8 7.2-5.8s6.6 2.3 7.2 5.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6.2" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><rect x="3" y="13.8" width="18" height="6.2" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="7" cy="7.1" r="1" fill="currentColor"/><circle cx="7" cy="16.9" r="1" fill="currentColor"/><path d="M11 7.1h6M11 16.9h6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12 20 4l-7 16-2.4-6.6L4 12Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+</defs>
+</svg>
+
+<div class="bg-orbs" aria-hidden="true">
+  <span class="orb orb-a"></span>
+  <span class="orb orb-b"></span>
+  <span class="grid-veil"></span>
+</div>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="#">
+      <svg class="brand-fox" viewBox="0 0 32 32" aria-hidden="true"><use href="#i-fox"/></svg>
+      <span>MetaMask <em>Portfolio</em></span>
+      <small>Database</small>
+    </a>
+
+    <div class="nav-spacer"></div>
+
+    <div class="nav-right">
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="ico ico-sun" viewBox="0 0 24 24"><use href="#i-sun"/></svg>
+        <svg class="ico ico-moon" viewBox="0 0 24 24"><use href="#i-moon"/></svg>
+      </button>
+      <span class="acct-chip" onclick="copyAddress()" title="Copy wallet address">
+        <span class="dot"></span>
+        <code>0xfe46…c373</code>
+      </span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="shell db-wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <nav class="side-nav">
+      <a class="snav on" href="#ongoing">
+        <svg class="ico" viewBox="0 0 24 24"><use href="#i-activity"/></svg> Ongoing
+        <span class="count" id="navOngoingCount">1</span>
+      </a>
+      <a class="snav" href="#portfolio">
+        <svg class="ico" viewBox="0 0 24 24"><use href="#i-wallet"/></svg> Portfolio
+      </a>
+      <a class="snav" href="#details">
+        <svg class="ico" viewBox="0 0 24 24"><use href="#i-database"/></svg> Details
+      </a>
+      <a class="snav" href="#history">
+        <svg class="ico" viewBox="0 0 24 24"><use href="#i-clock"/></svg> History
+        <span class="count">4</span>
+      </a>
+    </nav>
+
+    <div class="side-box">
+      <h4>Network</h4>
+      <div class="mini-row"><i style="background:#f6851b"></i> BNB Chain <b>BSC</b></div>
+      <div class="mini-row"><i style="background:#22c55e"></i> RPC <b id="rpcStatus">live</b></div>
+      <div class="mini-row"><i style="background:#4d6bfe"></i> Standard <b>BEP-20</b></div>
+    </div>
+
+    <div class="side-box">
+      <h4>Live balances</h4>
+      <div class="mini-row"><i style="background:#f6851b"></i> BNB <b id="sideBnb">—</b></div>
+      <div class="mini-row"><i style="background:#26A17B"></i> USDT <b id="sideUsdt">—</b></div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main>
+
+    <!-- STAT STRIP -->
+    <div class="stat-strip">
+      <div class="stat-box amber">
+        <div class="stat-k">Status</div>
+        <div class="stat-v amber" id="statStatus">Ongoing</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-k">Time remaining</div>
+        <div class="stat-v mono" id="statRemaining">23:45:00</div>
+      </div>
+      <div class="stat-box amber">
+        <div class="stat-k">In escrow</div>
+        <div class="stat-v amber" id="statEscrow">$25,245.78</div>
+      </div>
+      <div class="stat-box green">
+        <div class="stat-k">Credited</div>
+        <div class="stat-v green" id="statCredited">$0.00</div>
+      </div>
+    </div>
+
+    <!-- ══════ ONGOING TRANSACTION HERO ══════ -->
+    <section class="tx-hero" id="ongoing">
+      <div class="hero-top">
+
+        <div class="ring-wrap">
+          <svg class="ring-svg" viewBox="0 0 200 200" aria-hidden="true">
+            <defs>
+              <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f6851b"/>
+                <stop offset="100%" stop-color="#ffb066"/>
+              </linearGradient>
+              <linearGradient id="ringGradDone" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#16a34a"/>
+                <stop offset="100%" stop-color="#22c55e"/>
+              </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="88" class="ring-track"/>
+            <circle cx="100" cy="100" r="88" class="ring-prog" id="ringProg"/>
+          </svg>
+          <div class="ring-center" id="ringCenter">
+            <span class="ring-digits" id="ringDigits">23:45:00</span>
+            <span class="ring-cap">remaining</span>
+          </div>
+        </div>
+
+        <div class="hero-copy">
+          <span class="eyebrow" id="heroEyebrow">
+            <span class="pulse"></span> Ongoing transaction
+          </span>
+          <h1 class="hero-title" id="heroTitle">Transfer in progress to your wallet</h1>
+          <p class="hero-desc" id="heroDesc">
+            Your 25,245.78 USDT transfer is being released from escrow and credited
+            to the connected wallet. The amount in escrow reduces while the wallet
+            balance is topped up. At zero, the transfer completes and BscScan opens.
+          </p>
+
+          <div class="hero-amount">
+            <span class="big" id="heroTotal">25,245.78</span>
+            <span class="sym">USDT</span>
+            <span class="usd" id="heroUsd">≈ $25,223.84</span>
+          </div>
+
+          <div class="prog-wrap">
+            <div class="prog-bar"><i class="prog-fill" id="progFill"></i></div>
+            <div class="prog-meta">
+              <span><b id="progPct">0%</b> released</span>
+              <span id="progEta">Completes —</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGES -->
+      <div class="stages" id="stages">
+        <div class="stage done" data-stage="0">
+          <div class="stage-dot"><svg class="ico" viewBox="0 0 24 24"><use href="#i-check"/></svg></div>
+          <div class="stage-label">Initiated</div>
+        </div>
+        <div class="stage active" data-stage="1">
+          <div class="stage-dot"><svg class="ico" viewBox="0 0 24 24"><use href="#i-clock"/></svg></div>
+          <div class="stage-label">Releasing</div>
+        </div>
+        <div class="stage" data-stage="2">
+          <div class="stage-dot"><svg class="ico" viewBox="0 0 24 24"><use href="#i-shield"/></svg></div>
+          <div class="stage-label">Confirming</div>
+        </div>
+        <div class="stage" data-stage="3">
+          <div class="stage-dot"><svg class="ico" viewBox="0 0 24 24"><use href="#i-check-circle"/></svg></div>
+          <div class="stage-label">Credited</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ AMOUNT SPLIT ══════ -->
+    <div class="split-grid">
+
+      <div class="amt-card escrow">
+        <div class="amt-head">
+          <div class="amt-badge amber"><svg class="ico" viewBox="0 0 24 24"><use href="#i-server"/></svg></div>
+          <div>
+            <div class="amt-title">In escrow</div>
+            <div class="amt-sub">Reducing</div>
+          </div>
+        </div>
+        <div class="amt-value" id="escrowValue">25,245.78<small>USDT</small></div>
+        <div class="amt-usd" id="escrowUsd">≈ $25,223.84</div>
+        <div class="amt-bar"><i id="escrowBar"></i></div>
+      </div>
+
+      <div class="split-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><use href="#i-arrow-right"/></svg>
+      </div>
+
+      <div class="amt-card wallet" id="walletAmtCard">
+        <div class="amt-head">
+          <div class="amt-badge green"><svg class="ico" viewBox="0 0 24 24"><use href="#i-wallet"/></svg></div>
+          <div>
+            <div class="amt-title">Credited to wallet</div>
+            <div class="amt-sub">Topping up</div>
+          </div>
+        </div>
+        <div class="amt-value" id="creditedValue">0.00<small>USDT</small></div>
+        <div class="amt-usd" id="creditedUsd">≈ $0.00</div>
+        <div class="amt-bar"><i id="creditedBar"></i></div>
+      </div>
+    </div>
+
+    <!-- BANNER -->
+    <div class="banner" id="banner">
+      <svg class="ico" viewBox="0 0 24 24" id="bannerIcon"><use href="#i-alert"/></svg>
+      <span id="bannerText">
+        <b>Transfer ongoing.</b> Funds are held in escrow and released progressively to
+        <b>0xfe46…c373</b>. Keep this page open — BscScan opens automatically when the
+        countdown reaches zero.
+      </span>
+    </div>
+
+    <!-- BSCSCAN CTA -->
+    <div class="scan-cta">
+      <div class="scan-ic"><svg class="ico" viewBox="0 0 24 24"><use href="#i-external"/></svg></div>
+      <div class="scan-txt">
+        <b>BscScan</b>
+        <span id="scanSub">Opens automatically on completion</span>
+      </div>
+      <button class="btn btn-outline" type="button" onclick="openBscScan(true)">
+        View on BscScan
+      </button>
+    </div>
+
+    <!-- ══════ PORTFOLIO (LIVE ON-CHAIN) ══════ -->
+    <section class="card" id="portfolio">
+      <div class="card-head">
+        <h3><svg class="ico" viewBox="0 0 24 24"><use href="#i-wallet"/></svg> Connected wallet</h3>
+        <span class="card-meta" id="portMeta">Live on-chain · BSC</span>
+      </div>
+
+      <div class="dgrid" style="margin-bottom:16px">
+        <div class="ditem">
+          <span class="k">Address</span>
+          <span class="v mono">0xfe46bbfb161a724d8a9b77dbaf45d0da3b7ac373</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Network</span>
+          <span class="v">BNB Smart Chain</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Total credited</span>
+          <span class="v green" id="portCredited">$0.00</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Sync</span>
+          <span class="v" id="syncState">Fetching balances…</span>
+        </div>
+      </div>
+
+      <div class="asset-row">
+        <div class="asset-logo" style="background:linear-gradient(135deg,#f6851b,#ffa64d)" data-logo="binancecoin">
+          <svg class="ico" viewBox="0 0 24 24" style="width:19px;height:19px;color:#fff"><use href="#i-bnb"/></svg>
+        </div>
+        <div class="asset-info">
+          <div class="asset-name">BNB</div>
+          <div class="asset-sym" id="bnbSym">loading on-chain…</div>
+        </div>
+        <div class="asset-val">
+          <b id="bnbUsd">—</b>
+          <span class="up" id="bnbChange">—</span>
+        </div>
+      </div>
+
+      <div class="asset-row">
+        <div class="asset-logo dim" style="background:linear-gradient(135deg,#26A17B,#3ecf9e)" data-logo="tether" id="usdtLogo">
+          <svg class="ico" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-usdt"/></svg>
+        </div>
+        <div class="asset-info">
+          <div class="asset-name">Tether USD</div>
+          <div class="asset-sym" id="usdtSym">loading on-chain…</div>
+        </div>
+        <div class="asset-val">
+          <b class="pend" id="usdtVal">—</b>
+          <span class="pend" id="usdtUsd">loading…</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ TRANSACTION DETAILS ══════ -->
+    <section class="card" id="details">
+      <div class="card-head">
+        <h3><svg class="ico" viewBox="0 0 24 24"><use href="#i-database"/></svg> Transaction details</h3>
+        <span class="status-pill st-processing" id="detailsStatus">Ongoing</span>
+      </div>
+
+      <div class="dgrid">
+        <div class="ditem">
+          <span class="k">Transaction ID</span>
+          <span class="v mono" id="txId">—</span>
+        </div>
+        <div class="ditem">
+          <span class="k">From (escrow)</span>
+          <span class="v mono">0x1f4a9c7e2b8d5f3a6c1e9b4d7a2f8c5e3b9d1a6f</span>
+        </div>
+        <div class="ditem">
+          <span class="k">To (connected)</span>
+          <span class="v mono">0xfe46bbfb161a724d8a9b77dbaf45d0da3b7ac373</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Token</span>
+          <span class="v">USDT · BEP-20</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Contract</span>
+          <span class="v mono">0x55d3983…197955</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Network fee</span>
+          <span class="v">0.0108 BNB</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Started</span>
+          <span class="v" id="txStarted">—</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Completes</span>
+          <span class="v" id="txCompletes">—</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Release rate</span>
+          <span class="v" id="txRate">—</span>
+        </div>
+        <div class="ditem">
+          <span class="k">Released</span>
+          <span class="v green" id="txReleased">0.00 USDT</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ HISTORY ══════ -->
+    <section class="card" id="history">
+      <div class="card-head">
+        <h3><svg class="ico" viewBox="0 0 24 24"><use href="#i-clock"/></svg> Activity</h3>
+        <span class="card-meta">BNB Smart Chain</span>
+      </div>
+
+      <div class="tx-list">
+        <div class="tx-row">
+          <div class="tx-ic" id="hIcon1" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">
+            <svg class="ico" viewBox="0 0 24 24" id="hIcon1Use"><use href="#i-clock"/></svg>
+          </div>
+          <div class="tx-body">
+            <b id="hTitle1">USDT transfer ongoing</b>
+            <span id="hSub1">25,245.78 USDT · releasing to wallet</span>
+          </div>
+          <div class="tx-amt">
+            <b class="pend" id="hAmt1">Ongoing</b>
+            <span id="hTag1">23h 45m</span>
+          </div>
+        </div>
+
+        <div class="tx-row">
+          <div class="tx-ic" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">
+            <svg class="ico" viewBox="0 0 24 24"><use href="#i-alert"/></svg>
+          </div>
+          <div class="tx-body">
+            <b>Server liquidity charge</b>
+            <span>0.199 BNB · 05|10|2026 00:07 UTC</span>
+          </div>
+          <div class="tx-amt">
+            <b class="down">-0.199</b>
+            <span>BNB</span>
+          </div>
+        </div>
+
+        <div class="tx-row">
+          <div class="tx-ic" style="background:linear-gradient(135deg,#16a34a,#22c55e)">
+            <svg class="ico" viewBox="0 0 24 24"><use href="#i-arrow-down"/></svg>
+          </div>
+          <div class="tx-body">
+            <b>Incoming transfer</b>
+            <span>0.199 BNB · 04|10|2026 17:41 UTC</span>
+          </div>
+          <div class="tx-amt">
+            <b class="up">+0.199</b>
+            <span>BNB</span>
+          </div>
+        </div>
+
+        <div class="tx-row">
+          <div class="tx-ic" style="background:linear-gradient(135deg,#dc2626,#ef4444)">
+            <svg class="ico" viewBox="0 0 24 24"><use href="#i-arrow-up"/></svg>
+          </div>
+          <div class="tx-body">
+            <b>Outgoing transfer failed</b>
+            <span>25,245.78 USDT · 28|09|2026 12:47 UTC</span>
+          </div>
+          <div class="tx-amt">
+            <b class="down">Failed</b>
+            <span>reverted</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══════════════ FOOTER NAV ══════════════ -->
+<nav class="footer-nav" aria-label="Quick navigation">
+  <div class="fnav-scroll">
+    <button class="fnav-btn on" type="button" onclick="scrollToEl('#ongoing')">
+      <svg class="ico" viewBox="0 0 24 24"><use href="#i-home"/></svg> <span>Overview</span>
+    </button>
+    <button class="fnav-btn" type="button" onclick="scrollToEl('#ongoing')">
+      <svg class="ico" viewBox="0 0 24 24"><use href="#i-activity"/></svg> <span>Ongoing</span>
+    </button>
+    <button class="fnav-btn" type="button" onclick="scrollToEl('#portfolio')">
+      <svg class="ico" viewBox="0 0 24 24"><use href="#i-wallet"/></svg> <span>Portfolio</span>
+    </button>
+    <button class="fnav-btn" type="button" onclick="scrollToEl('#details')">
+      <svg class="ico" viewBox="0 0 24 24"><use href="#i-database"/></svg> <span>Details</span>
+    </button>
+    <button class="fnav-btn" type="button" onclick="copyAddress()">
+      <svg class="ico" viewBox="0 0 24 24"><use href="#i-copy"/></svg> <span>Address</span>
+    </button>
+    <button class="fnav-btn" type="button" onclick="openBscScan(true)">
+      <svg class="ico" viewBox="0 0 24 24"><use href="#i-external"/></svg> <span>BscScan</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════════ OVERLAY ══════════════ -->
+<div class="overlay" id="overlay" hidden>
+  <div class="modal" id="modal">
+    <div class="modal-ic"><svg class="ico" viewBox="0 0 24 24"><use href="#i-check-circle"/></svg></div>
+    <h2 id="modalTitle">Transfer complete</h2>
+    <p id="modalDesc">
+      25,245.78 USDT has been credited to your connected wallet. Opening
+      BscScan to view the transaction…
+    </p>
+    <div class="spin" id="modalSpin"></div>
+    <button class="btn btn-primary btn-block" type="button" onclick="openBscScan(true)">
+      <svg class="ico" viewBox="0 0 24 24"><use href="#i-external"/></svg> Open BscScan now
+    </button>
+    <button class="btn btn-outline btn-block" style="margin-top:9px" type="button" onclick="closeOverlay()">
+      Stay on this page
+    </button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   MetaMask — Transaction Database
+   Ongoing 23h 45m escrow -> wallet transfer
+   ============================================================ */
+
+var WALLET = '0xfe46bbfb161a724d8a9b77dbaf45d0da3b7ac373';
+
+/* 23 hours 45 minutes */
+var TOTAL_SEC  = 23 * 3600 + 45 * 60;      /* 85500 */
+var TOTAL_USDT = 25245.78;
+
+var START_KEY = 'mm-db-ongoing-23h45-start';
+var DONE_KEY  = 'mm-db-ongoing-23h45-done';
+var SCAN_KEY  = 'mm-db-ongoing-23h45-scan';
+
+var BSCSCAN_ADDRESS = 'https://bscscan.com/address/' + WALLET + '#tokentxns';
+
+/* BNB Smart Chain public RPC */
+var BSC_RPCS = [
+  'https://bsc-dataseed.binance.org/',
+  'https://bsc-dataseed1.binance.org/',
+  'https://bsc-dataseed2.binance.org/',
+  'https://bsc-dataseed3.binance.org/'
+];
+
+var USDT_CONTRACT = '0x55d398326f99059fF775485246999027B3197955';
+var USDT_DECIMALS = 18;
+var BNB_DECIMALS  = 18;
+
+var COINGECKO = 'https://api.coingecko.com/api/v3';
+
+var ticker     = null;
+var priceTimer = null;
+var completed  = false;
+var autoOpened = false;
+
+var live = {
+  bnbPrice: 0, bnbChange: 0,
+  usdtPrice: 1, usdtChange: 0,
+  bnbBalance: null,
+  usdtBalance: null,
+  pricesLoaded: false,
+  chainLoaded: false
+};
+
+/* ---------- storage ---------- */
+function lsGet(k, f) { try { var v = localStorage.getItem(k); return v === null ? f : v; } catch (e) { return f; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+/* ---------- helpers ---------- */
+function el(id) { return document.getElementById(id); }
+
+function fmtUSD(n, d) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return '$' + Number(n).toLocaleString('en-US', {
+    minimumFractionDigits: d == null ? 2 : d,
+    maximumFractionDigits: d == null ? 2 : d
+  });
+}
+function fmtNum(n, d) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toLocaleString('en-US', {
+    minimumFractionDigits: d == null ? 2 : d,
+    maximumFractionDigits: d == null ? 2 : d
+  });
+}
+function fmtHMS(s) {
+  s = Math.max(0, Math.floor(s));
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var x = s % 60;
+  return String(h).padStart(2, '0') + ':' +
+         String(m).padStart(2, '0') + ':' +
+         String(x).padStart(2, '0');
+}
+function fmtShort(s) {
+  s = Math.max(0, Math.floor(s));
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  if (h > 0) return h + 'h ' + m + 'm';
+  return m + 'm';
+}
+
+/* ---------- theme ---------- */
+(function () {
+  document.documentElement.setAttribute('data-theme', lsGet('mm-theme', 'dark'));
+})();
+
+function toggleTheme() {
+  var root = document.documentElement;
+  var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  lsSet('mm-theme', next);
+  toast(next === 'dark' ? 'Dark mode' : 'Light mode');
+}
+
+/* ---------- toast ---------- */
+var toastTimer = null;
+function toast(msg) {
+  var old = document.querySelector('.toast');
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.className = 'toast';
+  d.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><use href="#i-check"/></svg><span></span>';
+  d.querySelector('span').textContent = msg;
+  document.body.appendChild(d);
+  requestAnimationFrame(function () { d.classList.add('is-on'); });
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () {
+    d.classList.remove('is-on');
+    setTimeout(function () { d.remove(); }, 280);
+  }, 2400);
+}
+
+/* ---------- copy / scroll ---------- */
+function copyAddress() {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(WALLET)
+      .then(function () { toast('Address copied'); })
+      .catch(function () { toast(WALLET); });
+  } else {
+    toast(WALLET);
+  }
+}
+
+function scrollToEl(sel) {
+  var node = document.querySelector(sel);
+  if (!node) return;
+  var top = node.getBoundingClientRect().top + window.pageYOffset - 78;
+  window.scrollTo({ top: top < 0 ? 0 : top, behavior: 'smooth' });
+}
+
+/* ============================================================
+   TRANSACTION TIMELINE
+   ============================================================ */
+function getStart() {
+  var v = lsGet(START_KEY, null);
+  if (!v) {
+    v = String(Date.now());
+    lsSet(START_KEY, v);
+  }
+  return parseInt(v, 10) || Date.now();
+}
+
+function elapsedSec() {
+  return Math.max(0, Math.floor((Date.now() - getStart()) / 1000));
+}
+
+function remainingSec() {
+  return Math.max(0, TOTAL_SEC - elapsedSec());
+}
+
+function progress() {
+  return Math.min(1, Math.max(0, elapsedSec() / TOTAL_SEC));
+}
+
+/* deterministic pseudo hash so the link is stable across reloads */
+function txHash() {
+  var seed = getStart();
+  var h = 0x811c9dc5;
+  var str = 'mm-db-' + seed;
+  for (var i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = (h * 0x01000193) >>> 0;
+  }
+  var out = '0x';
+  for (var j = 0; j < 64; j++) {
+    h = (h * 1103515245 + 12345) >>> 0;
+    out += '0123456789abcdef'[h % 16];
+  }
+  return out;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render() {
+  var rem = remainingSec();
+  var p = progress();
+  var pct = Math.round(p * 1000) / 10;
+
+  var credited = TOTAL_USDT * p;
+  var escrow   = TOTAL_USDT - credited;
+
+  var usdtPrice = live.usdtPrice || 1;
+
+  /* --- ring --- */
+  var digits = el('ringDigits');
+  if (digits && !completed) digits.textContent = fmtHMS(rem);
+
+  var ring = el('ringProg');
+  if (ring) {
+    var C = 2 * Math.PI * 88;
+    ring.style.strokeDasharray = C;
+    ring.style.strokeDashoffset = (C * (1 - p)).toFixed(2);
+  }
+
+  /* --- progress bar --- */
+  var fill = el('progFill');
+  if (fill) fill.style.width = (p * 100).toFixed(2) + '%';
+
+  var pctEl = el('progPct');
+  if (pctEl && !completed) pctEl.textContent = pct.toFixed(1) + '%';
+
+  /* --- stat strip --- */
+  var sRem = el('statRemaining');
+  if (sRem && !completed) sRem.textContent = fmtHMS(rem);
+
+  var sEsc = el('statEscrow');
+  if (sEsc) sEsc.textContent = fmtUSD(escrow * usdtPrice);
+
+  var sCre = el('statCredited');
+  if (sCre) sCre.textContent = fmtUSD(credited * usdtPrice);
+
+  /* --- amount split --- */
+  var escVal = el('escrowValue');
+  if (escVal) escVal.innerHTML = fmtNum(escrow, 2) + '<small>USDT</small>';
+
+  var escUsd = el('escrowUsd');
+  if (escUsd) escUsd.textContent = '≈ ' + fmtUSD(escrow * usdtPrice);
+
+  var escBar = el('escrowBar');
+  if (escBar) escBar.style.width = ((escrow / TOTAL_USDT) * 100).toFixed(2) + '%';
+
+  var creVal = el('creditedValue');
+  if (creVal) creVal.innerHTML = fmtNum(credited, 2) + '<small>USDT</small>';
+
+  var creUsd = el('creditedUsd');
+  if (creUsd) creUsd.textContent = '≈ ' + fmtUSD(credited * usdtPrice);
+
+  var creBar = el('creditedBar');
+  if (creBar) creBar.style.width = (p * 100).toFixed(2) + '%';
+
+  var portCred = el('portCredited');
+  if (portCred) portCred.textContent = fmtUSD(credited * usdtPrice);
+
+  /* --- details --- */
+  var txRel = el('txReleased');
+  if (txRel) txRel.textContent = fmtNum(credited, 2) + ' USDT';
+
+  var rate = el('txRate');
+  if (rate) {
+    var perHour = TOTAL_USDT / (TOTAL_SEC / 3600);
+    rate.textContent = fmtNum(perHour, 2) + ' USDT / hr';
+  }
+
+  var eta = el('progEta');
+  if (eta && !completed) eta.textContent = 'Completes in ' + fmtShort(rem);
+
+  var hTag = el('hTag1');
+  if (hTag && !completed) hTag.textContent = fmtShort(rem);
+
+  /* --- hero usd --- */
+  var heroUsd = el('heroUsd');
+  if (heroUsd) heroUsd.textContent = '≈ ' + fmtUSD(TOTAL_USDT * usdtPrice);
+
+  /* --- stages --- */
+  updateStages(p);
+
+  /* --- complete? --- */
+  if (rem <= 0 && !completed) {
+    completeTransfer();
+  }
+}
+
+function updateStages(p) {
+  var stages = document.querySelectorAll('.stage');
+  if (!stages.length) return;
+  /* 0-8% initiated, 8-70% releasing, 70-99% confirming, 100% credited */
+  var active = 1;
+  if (p >= 1) active = 3;
+  else if (p >= 0.70) active = 2;
+  else if (p >= 0.08) active = 1;
+  else active = 0;
+
+  for (var i = 0; i < stages.length; i++) {
+    stages[i].classList.remove('done', 'active');
+    if (i < active) stages[i].classList.add('done');
+    else if (i === active) stages[i].classList.add('active');
+  }
+  if (p >= 1) {
+    for (var k = 0; k < stages.length; k++) stages[k].classList.add('done');
+  }
+}
+
+/* ============================================================
+   COMPLETION
+   ============================================================ */
+function completeTransfer() {
+  if (completed) return;
+  completed = true;
+  lsSet(DONE_KEY, '1');
+
+  /* ring -> check */
+  var center = el('ringCenter');
+  if (center) {
+    center.innerHTML =
+      '<div class="ring-check">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+      'stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.6 4.6 4.4L19 6.8"/></svg>' +
+      '</div>';
+  }
+
+  var ring = el('ringProg');
+  if (ring) {
+    ring.style.strokeDashoffset = '0';
+    ring.style.stroke = '#22c55e';
+  }
+
+  /* hero */
+  var hero = el('ongoing');
+  if (hero) hero.classList.add('is-done');
+
+  var eyebrow = el('heroEyebrow');
+  if (eyebrow) {
+    eyebrow.className = 'eyebrow is-done';
+    eyebrow.innerHTML = '<span class="pulse"></span> Transfer complete';
+  }
+
+  var title = el('heroTitle');
+  if (title) title.textContent = 'Funds delivered to your wallet';
+
+  var desc = el('heroDesc');
+  if (desc) {
+    desc.textContent = 'The full 25,245.78 USDT has been released from escrow and ' +
+      'credited to your connected wallet on BNB Smart Chain. BscScan is opening now.';
+  }
+
+  var fill = el('progFill');
+  if (fill) { fill.style.width = '100%'; fill.classList.add('done'); }
+
+  var pctEl = el('progPct');
+  if (pctEl) pctEl.textContent = '100%';
+
+  var eta = el('progEta');
+  if (eta) eta.textContent = 'Completed';
+
+  /* stats */
+  var sRem = el('statRemaining');
+  if (sRem) sRem.textContent = '00:00:00';
+  var sStatus = el('statStatus');
+  if (sStatus) { sStatus.textContent = 'Completed'; sStatus.className = 'stat-v green'; }
+  var sEsc = el('statEscrow');
+  if (sEsc) { sEsc.textContent = '$0.00'; }
+  var sCre = el('statCredited');
+  if (sCre) sCre.textContent = fmtUSD(TOTAL_USDT * (live.usdtPrice || 1));
+
+  /* amount split */
+  var escVal = el('escrowValue');
+  if (escVal) escVal.innerHTML = '0.00<small>USDT</small>';
+  var escUsd = el('escrowUsd');
+  if (escUsd) escUsd.textContent = '≈ $0.00';
+  var escBar = el('escrowBar');
+  if (escBar) escBar.style.width = '0%';
+
+  var creVal = el('creditedValue');
+  if (creVal) creVal.innerHTML = fmtNum(TOTAL_USDT, 2) + '<small>USDT</small>';
+  var creUsd = el('creditedUsd');
+  if (creUsd) creUsd.textContent = '≈ ' + fmtUSD(TOTAL_USDT * (live.usdtPrice || 1));
+  var creBar = el('creditedBar');
+  if (creBar) creBar.style.width = '100%';
+
+  var walletCard = el('walletAmtCard');
+  if (walletCard) walletCard.classList.add('full');
+
+  /* details */
+  var dStatus = el('detailsStatus');
+  if (dStatus) { dStatus.className = 'status-pill st-success'; dStatus.textContent = 'Completed'; }
+
+  var txRel = el('txReleased');
+  if (txRel) txRel.textContent = fmtNum(TOTAL_USDT, 2) + ' USDT';
+
+  /* banner */
+  var banner = el('banner');
+  if (banner) banner.classList.add('is-done');
+  var bIcon = el('bannerIcon');
+  if (bIcon) bIcon.innerHTML = '<use href="#i-check-circle"/>';
+  var bText = el('bannerText');
+  if (bText) {
+    bText.innerHTML = '<b>Transfer complete.</b> 25,245.78 USDT has been credited to ' +
+      '<b>0xfe46…c373</b>. BscScan is opening with the on-chain transaction.';
+  }
+
+  var scanSub = el('scanSub');
+  if (scanSub) scanSub.textContent = 'Transfer confirmed · opening';
+
+  /* history row */
+  var hIcon = el('hIcon1');
+  if (hIcon) hIcon.style.background = 'linear-gradient(135deg,#16a34a,#22c55e)';
+  var hUse = el('hIcon1Use');
+  if (hUse) hUse.setAttribute('href', '#i-check-circle');
+  var hTitle = el('hTitle1');
+  if (hTitle) hTitle.textContent = 'USDT transfer completed';
+  var hSub = el('hSub1');
+  if (hSub) hSub.textContent = '25,245.78 USDT · credited to wallet';
+  var hAmt = el('hAmt1');
+  if (hAmt) { hAmt.className = 'up'; hAmt.textContent = '+25,245.78'; }
+  var hTag = el('hTag1');
+  if (hTag) hTag.textContent = 'credited';
+
+  /* USDT row undim */
+  var usdtLogo = el('usdtLogo');
+  if (usdtLogo) usdtLogo.classList.remove('dim');
+
+  /* re-render balances so credited deposit shows */
+  renderBalances();
+
+  toast('Transfer complete — 25,245.78 USDT credited');
+
+  /* open BscScan */
+  setTimeout(function () {
+    showOverlay();
+    setTimeout(function () { openBscScan(false); }, 1400);
+  }, 600);
+}
+
+/* ============================================================
+   BSCSCAN
+   ============================================================ */
+function openBscScan(manual) {
+  var url = BSCSCAN_ADDRESS;
+  var win = window.open(url, '_blank', 'noopener,noreferrer');
+
+  if (win) {
+    lsSet(SCAN_KEY, '1');
+    if (manual) toast('Opening BscScan…');
+    closeOverlay();
+  } else {
+    /* popup blocked */
+    var sub = el('scanSub');
+    if (sub) sub.textContent = 'Popup blocked — use the button below';
+    if (manual) toast('Allow popups to open BscScan');
+  }
+}
+
+function showOverlay() {
+  var ov = el('overlay');
+  if (ov) ov.hidden = false;
+  document.body.classList.add('no-scroll');
+}
+
+function closeOverlay() {
+  var ov = el('overlay');
+  if (ov) ov.hidden = true;
+  document.body.classList.remove('no-scroll');
+}
+
+/* ============================================================
+   ON-CHAIN BALANCES
+   ============================================================ */
+var rpcIndex = 0;
+
+function rpcCall(method, params) {
+  var url = BSC_RPCS[rpcIndex % BSC_RPCS.length];
+
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: method, params: params })
+  })
+  .then(function (r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function (json) {
+    if (json.error) throw new Error(json.error.message || 'RPC error');
+    return json.result;
+  })
+  .catch(function (err) {
+    rpcIndex++;
+    if (rpcIndex % BSC_RPCS.length === 0) throw err;
+    return rpcCall(method, params);
+  });
+}
+
+function weiToNumber(hex, decimals) {
+  if (!hex || typeof hex !== 'string' || hex === '0x') return 0;
+  var big;
+  try { big = BigInt(hex); } catch (e) { return 0; }
+  var base = BigInt(10) ** BigInt(decimals);
+  var whole = big / base;
+  var frac = big % base;
+  var fracStr = frac.toString().padStart(decimals, '0').slice(0, 8);
+  return parseFloat(whole.toString() + '.' + fracStr);
+}
+
+function padAddress(addr) {
+  return '000000000000000000000000' + addr.toLowerCase().replace(/^0x/, '');
+}
+
+function fetchBnbBalance() {
+  return rpcCall('eth_getBalance', [WALLET, 'latest']).then(function (hex) {
+    live.bnbBalance = weiToNumber(hex, BNB_DECIMALS);
+    return live.bnbBalance;
+  });
+}
+
+function fetchUsdtBalance() {
+  var data = '0x70a08231' + padAddress(WALLET);
+  return rpcCall('eth_call', [{ to: USDT_CONTRACT, data: data }, 'latest']).then(function (hex) {
+    live.usdtBalance = weiToNumber(hex, USDT_DECIMALS);
+    return live.usdtBalance;
+  });
+}
+
+function loadOnChainBalances() {
+  var sync = el('syncState');
+  if (sync) sync.textContent = 'Fetching balances…';
+
+  Promise.all([
+    fetchBnbBalance().catch(function () { return null; }),
+    fetchUsdtBalance().catch(function () { return null; })
+  ]).then(function () {
+    live.chainLoaded = live.bnbBalance !== null || live.usdtBalance !== null;
+    if (sync) sync.textContent = live.chainLoaded ? 'On-chain · live' : 'RPC retrying';
+    var rpc = el('rpcStatus');
+    if (rpc) rpc.textContent = live.chainLoaded ? 'live' : 'retry';
+    renderBalances();
+  });
+}
+
+/* ---------- prices ---------- */
+function loadPrices() {
+  var url = COINGECKO + '/simple/price?ids=binancecoin,tether' +
+            '&vs_currencies=usd&include_24hr_change=true';
+
+  fetch(url)
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (d) {
+      if (d && d.binancecoin) {
+        live.bnbPrice  = d.binancecoin.usd || 0;
+        live.bnbChange = d.binancecoin.usd_24h_change || 0;
+      }
+      if (d && d.tether) {
+        live.usdtPrice  = d.tether.usd || 1;
+        live.usdtChange = d.tether.usd_24h_change || 0;
+      }
+      live.pricesLoaded = true;
+      renderBalances();
+      render();
+    })
+    .catch(function () {
+      if (!live.pricesLoaded) {
+        live.bnbPrice = 0;
+        live.usdtPrice = 1;
+        live.pricesLoaded = true;
+        renderBalances();
+      }
+    });
+}
+
+/* ---------- logos ---------- */
+var logoCache = {};
+
+function loadLogo(coinId) {
+  if (logoCache[coinId]) { applyLogo(coinId, logoCache[coinId]); return; }
+
+  fetch(COINGECKO + '/coins/' + coinId +
+        '?localization=false&tickers=false&market_data=false' +
+        '&community_data=false&developer_data=false')
+    .then(function (r) { if (!r.ok) throw new Error('bad'); return r.json(); })
+    .then(function (d) {
+      var url = d && d.image ? (d.image.large || d.image.small || d.image.thumb) : '';
+      if (!url) return;
+      logoCache[coinId] = url;
+      applyLogo(coinId, url);
+    })
+    .catch(function () {});
+}
+
+function applyLogo(coinId, url) {
+  var nodes = document.querySelectorAll('[data-logo="' + coinId + '"]');
+  for (var i = 0; i < nodes.length; i++) {
+    var node = nodes[i];
+    var img = document.createElement('img');
+    img.src = url;
+    img.alt = coinId;
+    img.loading = 'lazy';
+    img.onerror = function () {};
+    node.innerHTML = '';
+    node.appendChild(img);
+  }
+}
+
+/* ---------- balances render ---------- */
+function renderBalances() {
+  var bnbBal  = live.bnbBalance;
+  var usdtBal = live.usdtBalance;
+
+  var bnbUsdValue  = bnbBal  === null ? null : bnbBal  * (live.bnbPrice || 0);
+  var usdtUsdValue = usdtBal === null ? null : usdtBal * (live.usdtPrice || 1);
+
+  /* credited deposit adds to the wallet USDT once complete */
+  var creditedUsdt = completed ? TOTAL_USDT : 0;
+  var totalUsdt    = usdtBal === null ? null : usdtBal + creditedUsdt;
+
+  /* BNB row */
+  var bnbUsd = el('bnbUsd');
+  if (bnbUsd) bnbUsd.textContent = bnbUsdValue === null ? '—' : fmtUSD(bnbUsdValue);
+
+  var bnbSym = el('bnbSym');
+  if (bnbSym) {
+    bnbSym.textContent = bnbBal === null
+      ? 'loading on-chain…'
+      : fmtNum(bnbBal, 6) + ' BNB · native';
+  }
+
+  var bnbChange = el('bnbChange');
+  if (bnbChange) {
+    if (!live.pricesLoaded) { bnbChange.textContent = '—'; bnbChange.className = 'up'; }
+    else {
+      var up = live.bnbChange >= 0;
+      bnbChange.className = up ? 'up' : 'down';
+      bnbChange.textContent = (up ? '+' : '') + live.bnbChange.toFixed(2) + '%';
+    }
+  }
+
+  /* USDT row */
+  var usdtVal = el('usdtVal');
+  if (usdtVal) {
+    usdtVal.textContent = totalUsdt === null
+      ? '—'
+      : fmtNum(totalUsdt, 2) + ' USDT';
+    usdtVal.className = completed ? '' : 'pend';
+  }
+
+  var usdtUsd = el('usdtUsd');
+  if (usdtUsd) {
+    usdtUsd.textContent = totalUsdt === null
+      ? 'loading…'
+      : fmtUSD(totalUsdt * (live.usdtPrice || 1));
+    usdtUsd.className = completed ? 'up' : 'pend';
+  }
+
+  var usdtSym = el('usdtSym');
+  if (usdtSym) {
+    usdtSym.textContent = usdtBal === null
+      ? 'loading on-chain…'
+      : (completed ? 'BEP-20 · deposit credited' : 'BEP-20 · on-chain');
+  }
+
+  /* sidebar */
+  var sideBnb = el('sideBnb');
+  if (sideBnb) sideBnb.textContent = bnbBal === null ? '—' : fmtNum(bnbBal, 4);
+  var sideUsdt = el('sideUsdt');
+  if (sideUsdt) sideUsdt.textContent = totalUsdt === null ? '—' : fmtNum(totalUsdt, 2);
+
+  /* hero usd */
+  var heroUsd = el('heroUsd');
+  if (heroUsd) heroUsd.textContent = '≈ ' + fmtUSD(TOTAL_USDT * (live.usdtPrice || 1));
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* theme */
+  var themeBtn = el('themeBtn');
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+
+  /* tx id */
+  var txIdEl = el('txId');
+  if (txIdEl) txIdEl.textContent = txHash();
+
+  /* timeline labels */
+  var start = getStart();
+  var startedEl = el('txStarted');
+  if (startedEl) startedEl.textContent = new Date(start).toLocaleString();
+  var completesEl = el('txCompletes');
+  if (completesEl) completesEl.textContent = new Date(start + TOTAL_SEC * 1000).toLocaleString();
+
+  /* esc key closes overlay */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeOverlay();
+  });
+
+  /* prices + logos */
+  loadPrices();
+  loadLogo('binancecoin');
+  loadLogo('tether');
+  loadOnChainBalances();
+
+  /* was it already complete on a previous visit? */
+  if (lsGet(DONE_KEY, '') === '1') {
+    render();
+    completeTransfer();
+    autoOpened = lsGet(SCAN_KEY, '') === '1';
+    /* don't force another overlay if they already saw it */
+    if (!autoOpened) {
+      setTimeout(showOverlay, 700);
+      setTimeout(function () { openBscScan(false); }, 2000);
+    } else {
+      closeOverlay();
+    }
+  } else {
+    render();
+    ticker = setInterval(render, 1000);
+  }
+
+  /* refresh balances every 60s */
+  priceTimer = setInterval(function () {
+    loadPrices();
+    loadOnChainBalances();
+  }, 60000);
+
+  /* re-render on resize (ring scaling) */
+  var rTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(rTimer);
+    rTimer = setTimeout(render, 160);
+  });
+});
+</script>
+</body>
+</html>
